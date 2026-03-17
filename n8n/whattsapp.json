@@ -1,0 +1,3365 @@
+{
+  "name": "n8n-Melhorias_v4",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "const raw = $input.first().json.output;\n\n// normaliza string\nconst resposta = String(raw).trim().toLowerCase();\n\n// decisão segura\nlet conversa_encerrada = false;\n\nif (resposta === 'true') {\n  conversa_encerrada = true;\n} else if (resposta === 'false') {\n  conversa_encerrada = false;\n} else {\n  // fallback defensivo\n  conversa_encerrada = false;\n}\n\nreturn [\n  {\n    json: {\n      conversa_encerrada\n    }\n  }\n];\n"
+      },
+      "id": "b549f8c6-1bf6-4b9d-8a52-5da9393e9772",
+      "name": "Parse encerramento simples1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        128
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "mistralai/mistral-7b-instruct",
+          "mode": "id"
+        },
+        "responsesApiEnabled": false,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        608,
+        256
+      ],
+      "id": "bc3a6635-7339-43c2-91b3-2425c3748c3c",
+      "name": "OpenAI Chat Model4",
+      "credentials": {
+        "openAiApi": {
+          "id": "RNLJgN2jrihAvZLH",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $json.payload._data.Info.MediaType }}",
+              "rightValue": "ptt",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "0b66197e-99b6-4826-93e1-f7026a7f83d7",
+      "name": "Verifica se é áudio2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        -2736,
+        416
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "id-1",
+              "leftValue": "={{ $('retorna msg2').first().json.mensagem }}",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "8b19b901-5c66-4acb-9bc9-74feeb5454de",
+      "name": "Verifica possível encerramento2",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        208,
+        48
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "5c99b0fa-75bf-48e5-b5d2-1d8d59a7083a",
+      "name": "Pula transcrição2",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -2288,
+        512
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "1f423a7d-d0a2-4da2-ab9f-d293e9af995d",
+      "name": "Pula verificação encerramento2",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        608,
+        640
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "/webhook",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -3632,
+        352
+      ],
+      "id": "8d23937b-f5a1-4b13-9b11-f9716952e671",
+      "name": "Webhook3",
+      "webhookId": "485f2f28-3098-4b38-a5d1-4581043a610f"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a5ae2134-c0a9-48a9-aaf3-6ca9833a7b18",
+              "name": "session",
+              "value": "={{ $json.body.session }}",
+              "type": "string"
+            },
+            {
+              "id": "bb64b201-de90-4d95-be6d-3dbf9d0bac19",
+              "name": "customerID",
+              "value": "={{ $json.body.payload.from.split('@')[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "55f5061d-32be-4472-8725-9631d71ecd16",
+              "name": "nomeCliente",
+              "value": "={{ $json.body.payload._data.Info.PushName }}",
+              "type": "string"
+            },
+            {
+              "id": "214c92df-1b2d-42e3-80de-e0f377053d81",
+              "name": "meuNome",
+              "value": "={{ $json.body.me.pushName }}",
+              "type": "string"
+            },
+            {
+              "id": "d612d258-2f96-4baa-ac39-53b1305bf360",
+              "name": "meuId",
+              "value": "={{ $json.body.me.id }}",
+              "type": "string"
+            },
+            {
+              "id": "af429965-91f9-4343-9370-f3da93ded7bc",
+              "name": "fromMe",
+              "value": "={{ $json.body.payload.fromMe }}",
+              "type": "string"
+            },
+            {
+              "id": "f99cfb1d-bf4a-48e5-b648-2907ccd74e96",
+              "name": "data/hora",
+              "value": "={{ $now }}",
+              "type": "string"
+            },
+            {
+              "id": "06ac58a1-55d8-4b20-a7a3-52c91aff9af7",
+              "name": "payload",
+              "value": "={{ $json.body.payload }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3408,
+        352
+      ],
+      "id": "164fbf73-2732-4b4d-bc14-afed9c28f4e2",
+      "name": "Dados2"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1566e455-e4e6-4c63-afd7-0c90be90f901",
+              "leftValue": "={{ $('Webhook3').item.json.body.payload._data.Info.IsGroup }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "false",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        -3184,
+        352
+      ],
+      "id": "ac7c09ba-4804-4c96-ad13-2fcad90e4cbb",
+      "name": "é grupo?2"
+    },
+    {
+      "parameters": {
+        "url": "=http://waha:3000/waha/api/files/default/{{ $('Webhook3').item.json.body.payload._data.Info.ID }}.oga",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "qR7sP!xZ2tYh*VbK6mN9eWdJ4rFaGcC8lQzE3yUo"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "audio"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        -2512,
+        320
+      ],
+      "id": "96b5a2bb-35ae-46b7-a4a1-45a30d157731",
+      "name": "baixa msg recebida2"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "value": "public",
+          "mode": "list",
+          "cachedResultName": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "atendimento",
+          "mode": "list",
+          "cachedResultName": "atendimento"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "data_hora_inicio": "={{ $now }}",
+            "id_cliente": "={{ $('retorna_id2').first().json.numero || 'desconhecido' }}",
+            "id_atendente": "={{ $('Dados2').first().json.meuId?.split('@')[0] || 'desconhecido' }}",
+            "nome_cliente": "={{ $('Dados2').first().json.nomeCliente || 'Cliente' }}",
+            "status_atendimento": "Aberto"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id_atendimento",
+              "displayName": "id_atendimento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "data_hora_inicio",
+              "displayName": "data_hora_inicio",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data_hora_fim",
+              "displayName": "data_hora_fim",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "canal_origem",
+              "displayName": "canal_origem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "id_cliente",
+              "displayName": "id_cliente",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "id_atendente",
+              "displayName": "id_atendente",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status_atendimento",
+              "displayName": "status_atendimento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "nome_cliente",
+              "displayName": "nome_cliente",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "telefone_cliente",
+              "displayName": "telefone_cliente",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -688,
+        112
+      ],
+      "id": "e676f345-f4d3-47cd-bac3-ece5e31f6b95",
+      "name": "cria novo atendimento2",
+      "credentials": {
+        "postgres": {
+          "id": "9eNHYoZipXCw6w0w",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.payload._data.Info.MediaType }}",
+                    "rightValue": "={{'ptt'}}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "d012acb4-ad0e-4304-976c-8a958ff294c7"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "audio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "5a1978e7-ee0a-404d-bee5-8dec6c44e3f4",
+                    "leftValue": "={{ $json.payload._data.Info.Type }}",
+                    "rightValue": "={{ 'text' }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "texto"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "dbc3aeab-b27e-457d-974c-99c0dbfcc3de",
+                    "leftValue": "={{ $json.payload._data.Info.MediaType }}",
+                    "rightValue": "={{ 'document' }}",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals",
+                      "name": "filter.operator.equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "documento"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.3,
+      "position": [
+        -2960,
+        336
+      ],
+      "id": "b953fd30-f8ab-42df-9c76-984cea3f7be5",
+      "name": "Switch2"
+    },
+    {
+      "parameters": {
+        "resource": "audio",
+        "modelId": {
+          "__rl": true,
+          "value": "models/gemini-2.0-flash-lite",
+          "mode": "id",
+          "cachedResultName": "models/gemini-flash-lite-latest"
+        },
+        "inputType": "binary",
+        "binaryPropertyName": "audio",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.googleGemini",
+      "typeVersion": 1,
+      "position": [
+        -2288,
+        320
+      ],
+      "id": "8f6d0ddb-ffff-40fe-95d5-9cb494244889",
+      "name": "Transcribe a recording2",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "GgSuJF3kW7qL06QE",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id_atendimento \nFROM Atendimento \nWHERE id_cliente = ${{1}} AND status_atendimento = ${{2}}\n",
+        "options": {
+          "queryReplacement": "={{ $json.numero }},{{'Aberto'}}"
+        }
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1392,
+        320
+      ],
+      "id": "0764d1ab-528b-4152-b12e-51431c4cc300",
+      "name": "Busca id atendimento2",
+      "alwaysOutputData": true,
+      "credentials": {
+        "postgres": {
+          "id": "9eNHYoZipXCw6w0w",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "ff18ce40-4126-4b8d-bdcc-3e15bd02265c",
+              "leftValue": "={{ $json.id_atendimento }}",
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "id-2",
+              "leftValue": "={{ $json.id_atendimento }}",
+              "rightValue": "0",
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -1168,
+        320
+      ],
+      "id": "a2d20b1c-5aea-444d-981a-6f844927ad21",
+      "name": "Tem atendimento aberto?2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b51bdb39-4e3a-41c6-99a8-f6162b9a6d7d",
+              "name": "transcricao",
+              "value": "={{ $json.content?.parts?.[0]?.text || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "14a7a628-7f78-44a1-88ec-30c449277c84",
+              "name": "texto",
+              "value": "={{ $('Dados2').first().json.payload?.body || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2064,
+        320
+      ],
+      "id": "78e47575-e2b9-454d-94bb-a56850e7dbdf",
+      "name": "Edit Fields1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $input.first().json;\nconst a = input.transcricao;\nconst b = input.texto;\n\nfunction retornaNaoNulo(a, b) {\n    if (a !== null && a !== undefined && a !== '') {\n        return String(a).trim();\n    }\n    if (b !== null && b !== undefined && b !== '') {\n        return String(b).trim();\n    }\n    return '';\n}\n\nconst resultado = retornaNaoNulo(a, b);\n\nreturn [{\n    json: {\n        mensagem: resultado\n    }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1840,
+        320
+      ],
+      "id": "2f88df42-5a00-45f2-9d28-c46d3c2df90f",
+      "name": "retorna msg2"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=chat-{{ $json.id_atendimento }}",
+        "sessionTTL": 3600,
+        "contextWindowLength": 50
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        1744,
+        624
+      ],
+      "id": "098689ec-3671-4869-9718-84bdc6850192",
+      "name": "Redis Chat Memory2",
+      "credentials": {
+        "redis": {
+          "id": "wRonNNm9it8x7Ak2",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "mensagem",
+          "mode": "list",
+          "cachedResultName": "mensagem"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id_atendimento": "={{ $json.id_atendimento || 0 }}",
+            "conteudo_texto": "={{ $('retorna msg2').first().json.mensagem || '' }}",
+            "data_hora_envio": "={{ (() => { try { return new Date(new Date($('Dados2').first().json.payload.timestamp * 1000).toLocaleString('en-US', { timeZone: 'America/Sao_Paulo' })).toISOString(); } catch (e) { return new Date().toISOString(); } })() }}",
+            "remetente_tipo": "={{ $('Dados2').first().json.payload?.fromMe ? 'Atendente' : 'Cliente' }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id_mensagem",
+              "displayName": "id_mensagem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "id_atendimento",
+              "displayName": "id_atendimento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "conteudo_texto",
+              "displayName": "conteudo_texto",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data_hora_envio",
+              "displayName": "data_hora_envio",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "remetente_tipo",
+              "displayName": "remetente_tipo",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tipo_analise",
+              "displayName": "tipo_analise",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -560,
+        320
+      ],
+      "id": "373d48a3-0caa-4c24-b292-2280ffc5164e",
+      "name": "insere mensagem na tabela2",
+      "credentials": {
+        "postgres": {
+          "id": "9eNHYoZipXCw6w0w",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "4d6234ae-ecb5-4029-88c6-146b5bc1c991",
+              "leftValue": "={{ $json.conversa_encerrada }}",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1184,
+        128
+      ],
+      "id": "93a835c3-5730-4635-9060-532f39313525",
+      "name": "If2"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        -560,
+        640
+      ],
+      "id": "da0e97bb-2dc8-4ed5-a1d3-cd4da09ea0e8",
+      "name": "No Operation, do nothing1"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1408,
+        224
+      ],
+      "id": "b996650e-c0e1-4dbd-b303-2f38c1464992",
+      "name": "No Operation, do nothing5"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "atendimento",
+          "mode": "list",
+          "cachedResultName": "atendimento"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id_atendimento": "={{ $('Busca id atendimento2').first().json.id_atendimento }}",
+            "data_hora_fim": "={{ $('Dados2').first().json['data/hora'] }}",
+            "status_atendimento": "Fechado"
+          },
+          "matchingColumns": [
+            "id_atendimento"
+          ],
+          "schema": [
+            {
+              "id": "id_atendimento",
+              "displayName": "id_atendimento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "data_hora_inicio",
+              "displayName": "data_hora_inicio",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "data_hora_fim",
+              "displayName": "data_hora_fim",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "canal_origem",
+              "displayName": "canal_origem",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "id_cliente",
+              "displayName": "id_cliente",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "id_atendente",
+              "displayName": "id_atendente",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "status_atendimento",
+              "displayName": "status_atendimento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "nome_cliente",
+              "displayName": "nome_cliente",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1408,
+        32
+      ],
+      "id": "f1a4d101-424f-49d6-91fd-313efac136df",
+      "name": "atualiza tabela atendimento2",
+      "credentials": {
+        "postgres": {
+          "id": "9eNHYoZipXCw6w0w",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b928e1d8-72cb-47ee-a0b2-84c5299102d0",
+              "leftValue": "={{ $('Dados2').first().json.fromMe }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -944,
+        400
+      ],
+      "id": "425f91d7-0f94-41ed-9fe7-c4c4ac449b74",
+      "name": "conversa iniciada pelo antendente?2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "mistralai/mistral-7b-instruct",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1600,
+        416
+      ],
+      "id": "5d3c5c80-ca1f-4738-b99a-ae7406b0d9d2",
+      "name": "OpenAI Chat Model5",
+      "credentials": {
+        "openAiApi": {
+          "id": "RNLJgN2jrihAvZLH",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1984,
+        32
+      ],
+      "id": "1b1901e7-8531-42d0-a8d7-f904f1fa418c",
+      "name": "Edit Fields5"
+    },
+    {
+      "parameters": {
+        "jsonSchemaExample": "{\n  \"saudacao_inicial\": \"Boa\",\n  \"uso_nome_cliente\": \"Sim\",\n  \"rapport_empatia\": \"Alto\",\n  \"uso_emojis\": \"Adequado\",\n  \"tom_conversa\": \"Profissional e acolhedor\",\n  \"erros_gramaticais\": \"Nenhum\",\n  \"resolutividade\": \"Sim\",\n  \"tempo_resposta\": \"Rápido\",\n  \"indicios_venda\": \"Não\",\n  \"sentimento_geral\": \"Positivo\",\n  \"tipo_atendimento\": \"Suporte Técnico\",\n  \"pontuacao_geral\": 8,\n  \"observacoes\": \"A interação entre o cliente e a Lojas Renner teve várias características positivas. A loja era muito receptiva e acolhedora, usando o nome do cliente e emojis adequados para criar uma atmosfera amigável. O tom da conversa era profissional e acolhedor, com respostas rápidas. A questão do cliente foi resolvida eficazmente, contribuindo para um sentimento geral positivo. No entanto, faltaram oportunidades de venda cruzada ou adicional. Além disso, algumas respostas poderiam ser mais personalizadas, e não parecer pré-fabricadas ou automáticas.\"\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        1888,
+        464
+      ],
+      "id": "00ee4dea-f377-4b84-8644-c4e3e7d89c95",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "value": "analisequalidade",
+          "mode": "list",
+          "cachedResultName": "analisequalidade"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id_atendimento": "={{ $('atualiza tabela atendimento2').first().json.id_atendimento || 0 }}",
+            "saudacao_inicial": "={{ $('AI Agent2').first().json.output?.saudacao_inicial || '' }}",
+            "uso_nome_cliente": "={{ $('AI Agent2').first().json.output?.uso_nome_cliente || '' }}",
+            "rapport_empatia": "={{ $('AI Agent2').first().json.output?.rapport_empatia || '' }}",
+            "uso_emojis": "={{ $('AI Agent2').first().json.output?.uso_emojis || '' }}",
+            "tom_conversa": "={{ $('AI Agent2').first().json.output?.tom_conversa || '' }}",
+            "erros_gramaticais": "={{ $('AI Agent2').first().json.output?.erros_gramaticais || '' }}",
+            "resolutividade": "={{ $('AI Agent2').first().json.output?.resolutividade || '' }}",
+            "tempo_resposta": "={{ $('AI Agent2').first().json.output?.tempo_resposta || '' }}",
+            "indicios_venda": "={{ $('AI Agent2').first().json.output?.indicios_venda || '' }}",
+            "sentimento_geral": "={{ $('AI Agent2').first().json.output?.sentimento_geral || '' }}",
+            "tipo_atendimento": "={{ $('AI Agent2').first().json.output?.tipo_atendimento || '' }}",
+            "pontuacao_geral": "={{ $('AI Agent2').first().json.output?.pontuacao_geral || 0 }}",
+            "observacoes": "={{ $('AI Agent2').first().json.output?.observacoes || '' }}",
+            "data_analise": "={{ $now }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id_analise",
+              "displayName": "id_analise",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "id_atendimento",
+              "displayName": "id_atendimento",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "saudacao_inicial",
+              "displayName": "saudacao_inicial",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "uso_nome_cliente",
+              "displayName": "uso_nome_cliente",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rapport_empatia",
+              "displayName": "rapport_empatia",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "uso_emojis",
+              "displayName": "uso_emojis",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tom_conversa",
+              "displayName": "tom_conversa",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "erros_gramaticais",
+              "displayName": "erros_gramaticais",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "resolutividade",
+              "displayName": "resolutividade",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tempo_resposta",
+              "displayName": "tempo_resposta",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "indicios_venda",
+              "displayName": "indicios_venda",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sentimento_geral",
+              "displayName": "sentimento_geral",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tipo_atendimento",
+              "displayName": "tipo_atendimento",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pontuacao_geral",
+              "displayName": "pontuacao_geral",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "observacoes",
+              "displayName": "observacoes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data_analise",
+              "displayName": "data_analise",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        2208,
+        32
+      ],
+      "id": "4411e594-771a-4e99-8cf2-fd8c3a0d03bd",
+      "name": "Insert rows in a table2",
+      "credentials": {
+        "postgres": {
+          "id": "9eNHYoZipXCw6w0w",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const dadosNode = $('Dados2').first();\nif (!dadosNode || !dadosNode.json || !dadosNode.json.payload) {\n  return [{ json: { numero: 'erro_dados_ausentes' } }];\n}\n\nconst data = dadosNode.json.payload;\nif (!data._data || !data._data.Info) {\n  return [{ json: { numero: 'erro_estrutura_invalida' } }];\n}\n\nconst campos = [data._data.Info.SenderAlt, data._data.Info.Chat];\nlet numero = null;\n\n// Primeiro loop: busca por @s.whatsapp.net\nfor (let campo of campos) {\n  if (campo && typeof campo === 'string' && campo.includes('@s.whatsapp.net')) {\n    numero = campo.split('@')[0].split(':')[0];\n    break;\n  }\n}\n\n// Segundo loop: fallback se não encontrou\nif (!numero) {\n  for (let campo of campos) {\n    if (campo && typeof campo === 'string') {\n      numero = campo.replace('@lid', '').split('@')[0].split(':')[0];\n      break;\n    }\n  }\n}\n\n// Fallback final\nif (!numero || numero === '') {\n  numero = 'numero_nao_encontrado';\n}\n\nreturn [{ json: { numero: numero } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1616,
+        320
+      ],
+      "id": "3014bb4f-ef75-4b9e-bd7a-a8bc0fb5aa68",
+      "name": "retorna_id2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.conteudo_texto || 'Sem conteúdo' }}",
+        "options": {
+          "systemMessage": "Você é um assistente que analisa conversas de atendimento.\n\nSua tarefa é determinar se a conversa foi encerrada por AMBOS os participantes.\n\nConsidere encerramento quando:\n- Ambos se despediram claramente\n- Não há perguntas pendentes\n- O assunto foi concluído\n\nResponda APENAS com:\ntrue\n\nou\n\nfalse\n\nNão adicione nenhum texto extra, explicação ou formatação. Apenas a palavra true ou false."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        640,
+        -96
+      ],
+      "id": "75c92d61-77f1-4b8b-a298-395bdb8308b9",
+      "name": "Atendimento encerrado?2"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Você é um 'Analista de Qualidade de Atendimento Sênior' especializado em interações via WhatsApp. Sua missão é avaliar detalhadamente o desempenho e a qualidade de uma conversa de atendimento ao cliente fornecida abaixo.\n\n**Instruções de Análise e Critérios de Avaliação:**\n\n1.  **Analise a conversa** com foco em cortesia, eficiência, uso da linguagem e adesão a boas práticas de atendimento.\n2.  **Para a chave 'pontuacao_geral'**, atribua uma nota de 0 a 10, onde 10 é o melhor atendimento possível.\n\n**Instruções de Saída (MUITO IMPORTANTE):**\n* Utilize **EXATAMENTE** as chaves listadas abaixo.\n\n* `saudacao_inicial`: (Avaliação da qualidade e adequação da primeira mensagem do agente)\n* `uso_nome_cliente`: (Avaliação se o nome do cliente foi usado de forma apropriada, retornar apenas nao ou sim)\n* `rapport_empatia`: (Nível de conexão e demonstração de empatia. Ex: 'Alto', 'Médio', 'Baixo')\n* `uso_emojis`:  retornar apenas nao ou sim)\n* `tom_conversa`: (Descrição do tom: 'Profissional e acolhedor', 'Agressivo', 'Informal demais', etc.)\n* `erros_gramaticais`: (Listagem de erros notáveis ou 'Nenhum')\n* `resolutividade`: (Se o problema foi resolvido de forma eficaz e rápida, sim/não/parcial)\n* `tempo_resposta`: (Avaliação do tempo de resposta entre as mensagens do agente. Ex: 'Rápido', 'Lento', 'Irregular')\n* `indicios_venda`: (Se houve alguma tentativa ou oportunidade de *upsell/cross-sell*, retornar apenas nao ou sim)\n* `sentimento_geral`: (Classificação do sentimento do cliente ao final da conversa: 'Positivo', 'Neutro', 'Negativo' sem nenhum tipo de comentario adicional)\n* `tipo_atendimento`: (Classificação do motivo principal da conversa: 'Dúvida', 'Reclamação', 'Suporte Técnico', 'Vendas')\n* `pontuacao_geral`: (Nota de 0 a 10)\n* `observacoes`: (Resumo de pontos fortes e fracos da interação. Mínimo de 3 frases.)",
+        "hasOutputParser": true,
+        "needsFallback": true,
+        "options": {
+          "maxIterations": 3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1632,
+        32
+      ],
+      "id": "4d1ffb0e-f7b8-4678-ad83-ede253e0ed13",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "path": "/api/session/status",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "c3ce8ba1-d84c-423d-9abc-0019e18ae080",
+      "name": "GET /api/session/status",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2032,
+        1584
+      ],
+      "webhookId": "1423ce48-4e78-4eeb-ac99-738f0f7383aa"
+    },
+    {
+      "parameters": {
+        "url": "https://marketsharedigital.com.br/api/sessions/default",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "qR7sP!xZ2tYh*VbK6mN9eWdJ4rFaGcC8lQzE3yUo"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "eb7eaa4e-503a-442d-98df-0f164381547d",
+      "name": "Call WAHA API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.3,
+      "position": [
+        -1808,
+        1584
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "sessionName",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "status",
+              "value": "={{ $json.status }}",
+              "type": "string"
+            },
+            {
+              "id": "id-3",
+              "name": "qrCode",
+              "value": "={{ $json.qrCode || null }}",
+              "type": "string"
+            },
+            {
+              "id": "id-4",
+              "name": "account",
+              "value": "={{ JSON.stringify({ \"id\": $json.me?.id || null, \"pushName\": $json.me?.pushName || null }) }}",
+              "type": "object"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "ae89eead-570f-42dc-833d-8d2b905606fd",
+      "name": "Format Response",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1584,
+        1584
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type, Authorization"
+              }
+            ]
+          }
+        }
+      },
+      "id": "42020a3e-c15f-4434-9122-3e10be294250",
+      "name": "Return to Frontend",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -1360,
+        1584
+      ]
+    },
+    {
+      "parameters": {
+        "path": "/api/analytics/metrics",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "0aaf6499-02ee-42a1-ac77-e48eea4e3971",
+      "name": "GET /api/analytics/metrics2",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -3840,
+        1648
+      ],
+      "webhookId": "51a37a38-b54b-4b76-8278-5d1ae8cf29d6"
+    },
+    {
+      "parameters": {
+        "jsCode": "const query = $input.first().json.query || {};\nconst timeRange = query.timeRange || 'MES_ATUAL';\nconst startDate = query.startDate;\nconst endDate = query.endDate;\n\nconst dateExpr = \"COALESCE(a.data_hora_fim, a.data_hora_inicio)\";\nlet dateFilter = '';\n\nswitch(timeRange) {\n  case 'HOJE':\n    dateFilter = `DATE(${dateExpr}) = CURRENT_DATE`;\n    break;\n  case 'MES_ATUAL':\n    dateFilter = `EXTRACT(MONTH FROM ${dateExpr}) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM ${dateExpr}) = EXTRACT(YEAR FROM CURRENT_DATE)`;\n    break;\n  case 'ULTIMO_MES':\n    dateFilter = `${dateExpr} >= CURRENT_DATE - INTERVAL '30 days'`;\n    break;\n  case 'ULTIMOS_6_MESES':\n    dateFilter = `${dateExpr} >= CURRENT_DATE - INTERVAL '6 months'`;\n    break;\n  case 'PERSONALIZADO':\n    if (startDate && endDate) {\n      dateFilter = `${dateExpr} BETWEEN '${startDate}' AND '${endDate}'`;\n    } else {\n      dateFilter = `EXTRACT(MONTH FROM ${dateExpr}) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM ${dateExpr}) = EXTRACT(YEAR FROM CURRENT_DATE)`;\n    }\n    break;\n  default:\n    dateFilter = `EXTRACT(MONTH FROM ${dateExpr}) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM ${dateExpr}) = EXTRACT(YEAR FROM CURRENT_DATE)`;\n}\n\nreturn [{\n  json: {\n    dateFilter: dateFilter,\n    timeRange: timeRange\n  }\n}];"
+      },
+      "id": "873c3b03-09f0-4733-ab31-9f2fca445844",
+      "name": "Build Date Filter2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3616,
+        1648
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  COUNT(*) as total, \n  AVG(aq.pontuacao_geral) as avgScore, \n  ROUND(COUNT(CASE WHEN aq.sentimento_geral = 'Positivo' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 1) as positivePercent, \n  ROUND(COUNT(CASE WHEN aq.sentimento_geral = 'Negativo' THEN 1 END) * 100.0 / NULLIF(COUNT(*), 0), 1) as negativePercent \nFROM atendimento a \nLEFT JOIN analisequalidade aq ON a.id_atendimento = aq.id_atendimento \nWHERE a.status_atendimento = 'Fechado' \n  AND {{ $('Build Date Filter2').item.json.dateFilter }}",
+        "options": {}
+      },
+      "id": "0cb92fd8-174e-4f28-bf79-8e51d90101e1",
+      "name": "Query Overall Metrics1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -3392,
+        1360
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "9eNHYoZipXCw6w0w",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT a.id_atendente, AVG(aq.pontuacao_geral) as avg_score FROM atendimento a LEFT JOIN analisequalidade aq ON a.id_atendimento = aq.id_atendimento WHERE a.status_atendimento = 'Fechado' GROUP BY a.id_atendente ORDER BY avg_score DESC LIMIT 1",
+        "options": {}
+      },
+      "id": "0d808b92-8ef3-4d51-ada2-7b6481ddce83",
+      "name": "Query Top Attendant2",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -3392,
+        1552
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "9eNHYoZipXCw6w0w",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT AVG(EXTRACT(EPOCH FROM (a.data_hora_fim - a.data_hora_inicio)) / 60) as avgHandlingMinutes, COUNT(CASE WHEN aq.tipo_atendimento = 'Dúvida' THEN 1 END) as duvidas, COUNT(CASE WHEN aq.tipo_atendimento = 'Reclamação' THEN 1 END) as reclamacoes, COUNT(CASE WHEN aq.tipo_atendimento = 'Suporte Técnico' THEN 1 END) as suporte, COUNT(CASE WHEN aq.tipo_atendimento = 'Vendas' THEN 1 END) as vendas FROM atendimento a LEFT JOIN analisequalidade aq ON a.id_atendimento = aq.id_atendimento WHERE a.status_atendimento = 'Fechado'",
+        "options": {}
+      },
+      "id": "fd9566e6-213b-49ce-8ce3-541b589bf759",
+      "name": "Query Service Metrics2",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -3392,
+        1744
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "9eNHYoZipXCw6w0w",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT aq.tipo_atendimento, AVG(aq.pontuacao_geral) as avg_score FROM analisequalidade aq JOIN atendimento a ON aq.id_atendimento = a.id_atendimento WHERE a.status_atendimento = 'Fechado' GROUP BY aq.tipo_atendimento",
+        "options": {}
+      },
+      "id": "1c089313-e472-48ba-99da-c42540035d40",
+      "name": "Query Type Averages2",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -3392,
+        1936
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "9eNHYoZipXCw6w0w",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "function num(v) {\n  const n = parseFloat(v);\n  return Number.isFinite(n) ? n : 0;\n}\nfunction int(v) {\n  const n = parseInt(v);\n  return Number.isFinite(n) ? n : 0;\n}\n\nlet overall = {};\nlet top = {};\nlet service = {};\nlet typeItems = [];\n\ntry { overall = $('Query Overall Metrics1').first().json || {}; } catch (e) { overall = {}; }\ntry { top = $('Query Top Attendant2').first().json || {}; } catch (e) { top = {}; }\ntry { service = $('Query Service Metrics2').first().json || {}; } catch (e) { service = {}; }\ntry { typeItems = $('Query Type Averages2').all() || []; } catch (e) { typeItems = []; }\n\nconst typeScoreAverages = {};\nfor (const item of typeItems) {\n  const row = item.json || {};\n  if (row.tipo_atendimento) {\n    typeScoreAverages[row.tipo_atendimento] = num(row.avg_score).toFixed(1);\n  }\n}\n\nconst result = {\n  overallMetrics: {\n    total: int(overall.total),\n    avgScore: num(overall.avgscore).toFixed(1),\n    positivePercent: num(overall.positivepercent).toFixed(1),\n    negativePercent: num(overall.negativepercent).toFixed(1),\n    topAttendant: top.id_atendente\n      ? `${top.id_atendente} ${num(top.avg_score).toFixed(1)}`\n      : null\n  },\n  serviceMetrics: {\n    avgHandlingMinutes: num(service.avghandlingminutes).toFixed(1),\n    abandonmentPercent: 3.2,\n    typeDistribution: {\n      'Dúvida': int(service.duvidas),\n      'Reclamação': int(service.reclamacoes),\n      'Suporte Técnico': int(service.suporte),\n      'Vendas': int(service.vendas)\n    }\n  },\n  typeScoreAverages\n};\n\nreturn [{ json: result }];"
+      },
+      "id": "d393eb9b-6845-4c0b-a790-ac756a205f6d",
+      "name": "Format Final Response2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2944,
+        1456
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type, Authorization"
+              }
+            ]
+          }
+        }
+      },
+      "id": "09dba199-e13e-4b05-9e05-e4a2a3fe6a20",
+      "name": "Return Analytics2",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -2720,
+        1456
+      ]
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "id": "5617f681-cd74-42cf-9eee-1133cdabbf3f",
+      "name": "Merge1",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -3168,
+        1456
+      ]
+    },
+    {
+      "parameters": {
+        "path": "api/conversations/export",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "c7b4e3ac-82e7-45de-9a86-1b159f7e5992",
+      "name": "Webhook CSV Export",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -816,
+        1552
+      ],
+      "webhookId": "e552637c-8d66-4642-b6d7-5dfcce544c53"
+    },
+    {
+      "parameters": {
+        "jsCode": "const query = $input.first().json.query || {};\nconst timeRange = query.timeRange || 'MES_ATUAL';\nconst sentiment = query.sentiment || 'Todos';\nconst startDate = query.startDate;\nconst endDate = query.endDate;\nconst idAtendimento = query.idAtendimento; \nconst cliente = query.cliente;             \n\nconst dateExpr = \"COALESCE(a.data_hora_fim, a.data_hora_inicio)\";\nlet dateFilter = '';\n\nswitch (timeRange) {\n  case 'HOJE':\n    dateFilter = `DATE(${dateExpr}) = CURRENT_DATE`;\n    break;\n  case 'MES_ATUAL':\n    dateFilter = `EXTRACT(MONTH FROM ${dateExpr}) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM ${dateExpr}) = EXTRACT(YEAR FROM CURRENT_DATE)`;\n    break;\n  case 'ULTIMO_MES':\n    dateFilter = `${dateExpr} >= CURRENT_DATE - INTERVAL '30 days'`;\n    break;\n  case 'ULTIMOS_6_MESES':\n    dateFilter = `${dateExpr} >= CURRENT_DATE - INTERVAL '6 months'`;\n    break;\n  case 'PERSONALIZADO':\n    dateFilter = (startDate && endDate)\n      ? `${dateExpr} BETWEEN '${startDate}' AND '${endDate}'`\n      : `EXTRACT(MONTH FROM ${dateExpr}) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM ${dateExpr}) = EXTRACT(YEAR FROM CURRENT_DATE)`;\n    break;\n  default:\n    dateFilter = `EXTRACT(MONTH FROM ${dateExpr}) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM ${dateExpr}) = EXTRACT(YEAR FROM CURRENT_DATE)`;\n}\n\nreturn [{ json: { dateFilter, timeRange, sentiment, idAtendimento, cliente } }];"
+      },
+      "id": "9279f42d-706f-43b7-a3aa-fb6d32e494fb",
+      "name": "Build Date Filter",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        1552
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map(i => i.json);\nif (!rows.length) {\n  return [{ json: { csv: 'ID,Atendente,Cliente,Data/Hora,Score,Sentimento,Tipo,Mensagem\\n' } }];\n}\n\nconst headers = Object.keys(rows[0]);\nconst escape = (v) => {\n  if (v == null) return '';\n  const s = String(v);\n  const needsQuotes = /[\",\\n]/.test(s);\n  return needsQuotes ? '\"' + s.replace(/\"/g, '\"\"') + '\"' : s;\n};\n\nconst csv = [\n  headers.join(','),\n  ...rows.map(r => headers.map(h => escape(r[h])).join(','))\n].join('\\n');\n\nreturn [{ json: { csv } }];"
+      },
+      "id": "ad1470ba-a347-4ede-a4a7-a0553615f567",
+      "name": "Format CSV",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -64,
+        1552
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/csv; charset=utf-8"
+              },
+              {
+                "name": "Content-Disposition",
+                "value": "attachment; filename=\"conversas.csv\""
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "234789f4-2681-4f96-b946-d160aebefeea",
+      "name": "Return CSV",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        176,
+        1552
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  a.nome_cliente AS \"Nome\",\n  a.telefone_cliente AS \"Telefone\",\n  a.canal_origem AS \"Canal\",\n  '' AS \"Situação do CPF\",\n  aq.tipo_atendimento AS \"Serviço\",\n  a.id_atendimento AS \"Ticket Venda\",\n  CASE WHEN aq.indicios_venda = 'SIM' THEN 'TRUE' ELSE 'FALSE' END AS \"Venda (S/N)\",\n  CASE \n    WHEN aq.indicios_venda = 'SIM' THEN 'Fechou'\n    ELSE 'Cliente não fechou'\n  END AS \"Motivo\",\n  TO_CHAR(a.data_hora_inicio, 'DD/MM/YYYY') AS \"Data\",\n  TO_CHAR(a.data_hora_inicio, 'HH24:MI') AS \"Hora Chamado\",\n  TO_CHAR(COALESCE(a.data_hora_fim, a.data_hora_inicio), 'HH24:MI') AS \"Hora Resposta\",\n  TO_CHAR((COALESCE(a.data_hora_fim, a.data_hora_inicio) - a.data_hora_inicio), 'HH24:MI') AS \"Tempo de Resposta\",\n  CASE WHEN aq.saudacao_inicial = 'SIM' THEN 'TRUE' ELSE 'FALSE' END AS \"IA: Saudação Inicial (S/N)\",\n  CASE WHEN aq.uso_nome_cliente = 'SIM' THEN 'TRUE' ELSE 'FALSE' END AS \"IA: Uso do nome (S/N)\",\n  CASE WHEN aq.rapport_empatia IN ('ALTA', 'MEDIA') THEN 'TRUE' ELSE 'FALSE' END AS \"IA: Rapport\",\n  CASE WHEN aq.rapport_empatia IN ('ALTA', 'MEDIA') THEN 'TRUE' ELSE 'FALSE' END AS \"IA: Empatia\",\n  CASE WHEN aq.uso_emojis IN ('ADEQUADO', 'SIM') THEN 'FALSE' ELSE 'TRUE' END AS \"IA: Uso de Emojis\",\n  aq.tom_conversa AS \"IA: Tom da conversa\",\n  CASE WHEN aq.erros_gramaticais = 'NENHUM' THEN 'FALSE' ELSE 'TRUE' END AS \"IA: Erros Gramaticais\",\n  CASE WHEN aq.resolutividade IN ('ALTA', 'MEDIA') THEN 'TRUE' ELSE 'FALSE' END AS \"IA: Resolutividade\",\n  CASE WHEN aq.indicios_venda = 'SIM' THEN 'TRUE' ELSE 'FALSE' END AS \"IA: Venda concluída (S/N)\",\n  COALESCE(aq.observacoes, '') AS \"IA: Conteúdo da conversa\",\n  CASE \n    WHEN aq.pontuacao_geral >= 80 THEN 'Ótima'\n    WHEN aq.pontuacao_geral >= 60 THEN 'Boa'\n    WHEN aq.pontuacao_geral >= 40 THEN 'Regular'\n    ELSE 'Ruim'\n  END AS \"IA: Análise de Qualidade do Atendimento\",\n  aq.sentimento_geral AS \"IA: Análise de Sentimento\",\n  CONCAT('CONV', a.id_atendimento) AS \"IA: ID da conversa\",\n  CAST(a.id_atendente AS VARCHAR) AS \"IA: Nome do vendedor/Atendente\"\nFROM atendimento a\nJOIN analisequalidade aq ON a.id_atendimento = aq.id_atendimento\nWHERE\n  {{ $json.dateFilter }}\n  AND (\n    '{{ $json.sentiment }}' = 'Todos'\n    OR aq.sentimento_geral = '{{ $json.sentiment }}'\n  )\n  {{ $json.idAtendimento ? `AND a.id_atendimento = ${$json.idAtendimento}` : '' }}\n  {{ $json.cliente ? `AND a.nome_cliente ILIKE '%${$json.cliente}%'` : '' }}\nORDER BY a.data_hora_inicio DESC;",
+        "options": {}
+      },
+      "id": "0b3f6008-15b6-481b-92e7-c789e5b6a9e3",
+      "name": "Query CSV Rows1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -304,
+        1552
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "9eNHYoZipXCw6w0w",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "/api/analytics/metrics-extended",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "f674613d-9daa-43c0-996c-c4e9c3e3c253",
+      "name": "GET /api/analytics/metrics-extended",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -2048,
+        1888
+      ],
+      "webhookId": "dd9203a9-7a0f-494e-8311-329f33fe1e2d"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH bounds AS (\n  SELECT\n    CASE '{{ $json.query.timeRange || \"MES_ATUAL\" }}'\n      WHEN 'MES_ATUAL' THEN date_trunc('month', now())\n      WHEN 'MES_ANTERIOR' THEN date_trunc('month', now() - interval '1 month')\n      WHEN 'ULTIMOS_7_DIAS' THEN now() - interval '7 days'\n      WHEN 'ULTIMOS_6_MESES' THEN date_trunc('month', now() - interval '5 months')\n      ELSE date_trunc('month', now())\n    END AS start_date,\n    CASE '{{ $json.query.timeRange || \"MES_ATUAL\" }}'\n      WHEN 'MES_ATUAL' THEN now()\n      WHEN 'MES_ANTERIOR' THEN date_trunc('month', now())\n      WHEN 'ULTIMOS_7_DIAS' THEN now()\n      WHEN 'ULTIMOS_6_MESES' THEN now()\n      ELSE now()\n    END AS end_date\n)\n, base AS (\n  SELECT\n    a.id_atendimento,\n    a.status_atendimento,\n    EXTRACT(EPOCH FROM (a.data_hora_fim - a.data_hora_inicio)) / 60.0 AS handling_minutes,\n    aq.tipo_atendimento AS tipo,\n    aq.pontuacao_geral AS score\n  FROM atendimento a\n  LEFT JOIN analisequalidade aq ON aq.id_atendimento = a.id_atendimento\n  CROSS JOIN bounds b\n  WHERE a.data_hora_inicio >= b.start_date\n    AND a.data_hora_inicio <  b.end_date\n)\n, fechados AS (\n  SELECT handling_minutes\n  FROM base\n  WHERE status_atendimento = 'Fechado' AND handling_minutes IS NOT NULL\n)\nSELECT\n  COUNT(*) AS total,\n  COALESCE((SELECT AVG(handling_minutes) FROM fechados), 0) AS avg_handling_minutes,\n  CASE WHEN COUNT(*) = 0 THEN 0\n       ELSE ROUND(100.0 * SUM(CASE WHEN status_atendimento ILIKE 'ABANDONADO' THEN 1 ELSE 0 END)::numeric / COUNT(*), 1)\n  END AS abandonment_percent,\n  COUNT(CASE WHEN tipo = 'Dúvida' THEN 1 END) AS duvida_count,\n  COUNT(CASE WHEN tipo = 'Reclamação' THEN 1 END) AS reclamacao_count,\n  COUNT(CASE WHEN tipo = 'Suporte Técnico' THEN 1 END) AS suporte_count,\n  COUNT(CASE WHEN tipo = 'Vendas' THEN 1 END) AS vendas_count,\n  COALESCE(AVG(CASE WHEN tipo = 'Dúvida' THEN score END), 0) AS duvida_avg_score,\n  COALESCE(AVG(CASE WHEN tipo = 'Reclamação' THEN score END), 0) AS reclamacao_avg_score,\n  COALESCE(AVG(CASE WHEN tipo = 'Suporte Técnico' THEN score END), 0) AS suporte_avg_score,\n  COALESCE(AVG(CASE WHEN tipo = 'Vendas' THEN score END), 0) AS vendas_avg_score\nFROM base;",
+        "options": {}
+      },
+      "id": "443eb6da-1f2e-451d-a76a-5b4285087e57",
+      "name": "Query Extended Metrics",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1824,
+        1888
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "9eNHYoZipXCw6w0w",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst hasData = items.length > 0 && items[0].json;\nconst data = hasData ? items[0].json : {};\n\nconst getNum = (v, d = 0) => {\n  const n = Number(v);\n  return Number.isFinite(n) ? n : d;\n};\n\nconst result = {\n  overallMetrics: {\n    total: getNum(data.total),\n    avgHandlingMinutes: Number(getNum(data.avg_handling_minutes).toFixed(1)),\n    abandonmentPercent: Number(getNum(data.abandonment_percent).toFixed(1))\n  },\n  typeDistribution: {\n    'Dúvida': getNum(data.duvida_count),\n    'Reclamação': getNum(data.reclamacao_count),\n    'Suporte Técnico': getNum(data.suporte_count),\n    'Vendas': getNum(data.vendas_count)\n  },\n  typeScoreAverages: {\n    'Dúvida': Number(getNum(data.duvida_avg_score).toFixed(1)),\n    'Reclamação': Number(getNum(data.reclamacao_avg_score).toFixed(1)),\n    'Suporte Técnico': Number(getNum(data.suporte_avg_score).toFixed(1)),\n    'Vendas': Number(getNum(data.vendas_avg_score).toFixed(1))\n  }\n};\n\nreturn [{ json: result }];"
+      },
+      "id": "ebb6aa42-5ffb-422b-83da-afa41543d3d3",
+      "name": "Format Extended Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1600,
+        1888
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "allIncomingItems",
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, POST, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type, Authorization"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "e1e28830-ae23-469d-a98c-8046df017d76",
+      "name": "Return Extended Analytics",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -1376,
+        1888
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "push",
+        "list": "=chat-{{ $json.id_atendimento }}",
+        "messageData": "={{ $json.conteudo_texto }}"
+      },
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        -176,
+        80
+      ],
+      "id": "9e5f2f14-9d25-43ec-bb65-69e0719e618f",
+      "name": "Redis",
+      "credentials": {
+        "redis": {
+          "id": "wRonNNm9it8x7Ak2",
+          "name": "Redis account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "path": "/api/conversations/export/:id",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "70b53ba7-004e-4e7d-a607-cdde630fe7c9",
+      "name": "GET /api/conversations/export/:id",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -816,
+        1872
+      ],
+      "webhookId": "ec256d84-4083-4cf2-b044-94b071740959"
+    },
+    {
+      "parameters": {
+        "jsCode": "const id = $input.first().json.params.id;\nreturn [{ json: { id_atendimento: parseInt(id) } }];"
+      },
+      "id": "e029df21-d722-4e84-abf8-352f6cbfc9c2",
+      "name": "Extract ID",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -592,
+        1872
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT TO_CHAR(m.data_hora_envio, 'YYYY-MM-DD HH24:MI:SS') as timestamp, COALESCE(m.remetente, 'Desconhecido') as remetente, COALESCE(m.tipo_midia, 'text') as tipo, COALESCE(m.conteudo_texto, '') as mensagem, COALESCE(m.url_midia, '') as url_midia FROM mensagem m WHERE m.id_atendimento = {{ $json.id_atendimento }} ORDER BY m.data_hora_envio ASC",
+        "options": {}
+      },
+      "id": "367a6f07-08cb-44e2-a1bf-d7c6425e22b7",
+      "name": "Query Messages",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -368,
+        1872
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "9eNHYoZipXCw6w0w",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const rows = $input.all().map(i => i.json);\nconst id = $('Extract ID').first().json.id_atendimento || 'export';\n\nif (!rows.length) {\n  return [{ json: { csv: 'Timestamp,Remetente,Tipo,Mensagem,URL_Mídia\\n', filename: `conversa_${id}.csv` } }];\n}\n\nconst escape = (value) => {\n  if (value == null) return '';\n  const str = String(value);\n  const needsQuotes = /[,\"\\n\\r]/.test(str);\n  return needsQuotes ? '\"' + str.replace(/\"/g, '\"\"') + '\"' : str;\n};\n\nconst headers = ['timestamp', 'remetente', 'tipo', 'mensagem', 'url_midia'];\nconst csvContent = [\n  'Timestamp,Remetente,Tipo,Mensagem,URL_Mídia',\n  ...rows.map(row => headers.map(h => escape(row[h])).join(','))\n].join('\\n');\n\nreturn [{ json: { csv: csvContent, filename: `conversa_${id}.csv` } }];"
+      },
+      "id": "bc0c0483-dc2f-42e9-bdac-1ce2e7bd2e62",
+      "name": "Format CSV Export",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -144,
+        1872
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Content-Type",
+                "value": "text/csv; charset=utf-8"
+              },
+              {
+                "name": "Content-Disposition",
+                "value": "={{ 'attachment; filename=\"' + $json.filename + '\"' }}"
+              },
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              }
+            ]
+          }
+        }
+      },
+      "id": "e88cf02b-cf0c-43e6-bf22-ae4ac9e64508",
+      "name": "Return CSV Export",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        80,
+        1872
+      ]
+    },
+    {
+      "parameters": {
+        "path": "/api/conversations/audit",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "8353b7f3-9a16-4f06-9755-5344b4b58dd0",
+      "name": "GET /api/conversations/audit1",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -3872,
+        2352
+      ],
+      "webhookId": "4c223fa2-d9bd-493b-9010-99470f8626b5"
+    },
+    {
+      "parameters": {
+        "jsCode": "const req = $input.first().json || {};\nconst q = req.query || req;\n\nreturn [{\n  json: {\n    search: q.search || '',\n    timeRange: q.timeRange || 'MES_ATUAL',\n    startDate: q.startDate || '',\n    endDate: q.endDate || '',\n    sentiment: q.sentiment || 'Todos',\n    tipo: q.tipo || 'Todos',\n    limit: parseInt(q.limit) || 100,\n    offset: parseInt(q.offset) || 0\n  }\n}];"
+      },
+      "id": "18c1b263-7856-4671-a548-14d1e3b16fd9",
+      "name": "Extract Query Params1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3648,
+        2352
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const p = $input.first().json;\nconst dateExpr = \"COALESCE(a.data_hora_fim, a.data_hora_inicio)\";\nlet dateFilter = '1=1';\n\nswitch (p.timeRange) {\n  case 'HOJE': dateFilter = `DATE(${dateExpr}) = CURRENT_DATE`; break;\n  case 'MES_ATUAL': dateFilter = `EXTRACT(MONTH FROM ${dateExpr}) = EXTRACT(MONTH FROM CURRENT_DATE) AND EXTRACT(YEAR FROM ${dateExpr}) = EXTRACT(YEAR FROM CURRENT_DATE)`; break;\n  case 'ULTIMO_MES': dateFilter = `${dateExpr} >= CURRENT_DATE - INTERVAL '30 days'`; break;\n  case 'ULTIMOS_6_MESES': dateFilter = `${dateExpr} >= CURRENT_DATE - INTERVAL '6 months'`; break;\n  case 'PERSONALIZADO': dateFilter = p.startDate && p.endDate ? `${dateExpr} BETWEEN '${p.startDate}' AND '${p.endDate}'` : dateFilter; break;\n}\n\nreturn [{ json: { ...p, dateFilter } }];"
+      },
+      "id": "3e3fa86a-8460-4899-a232-5f75c13b7c5a",
+      "name": "Build Date Filter Audit1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -3424,
+        2352
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=WITH primeira_msg AS (\n  SELECT id_atendimento, MIN(data_hora_envio) primeira_data_hora,\n         (SELECT conteudo_texto FROM mensagem WHERE id_atendimento = m.id_atendimento ORDER BY data_hora_envio ASC LIMIT 1) primeira_mensagem\n  FROM mensagem m GROUP BY id_atendimento\n)\nSELECT DISTINCT ON (a.id_atendimento)\n  a.id_atendimento,\n  COALESCE(a.nome_cliente, 'Sem nome') AS empresa,\n  COALESCE(a.telefone_cliente, 'Sem telefone') telefone_cliente,\n  pm.primeira_data_hora data_hora,\n  COALESCE(aq.sentimento_geral, 'N/A') sentimento_geral,\n  COALESCE(aq.tipo_atendimento, 'N/A') tipo_atendimento,\n  COALESCE(aq.pontuacao_geral, 0) pontuacao_geral,\n  COALESCE(LEFT(pm.primeira_mensagem, 100), 'Sem mensagem') AS mensagem_trecho\nFROM atendimento a\nLEFT JOIN analisequalidade aq ON a.id_atendimento = aq.id_atendimento\nLEFT JOIN primeira_msg pm ON a.id_atendimento = pm.id_atendimento\nWHERE a.status_atendimento = 'Fechado'\nAND {{ $json.dateFilter }}\nAND aq.sentimento_geral IS NOT NULL AND aq.sentimento_geral != 'N/A'\nLIMIT {{ $json.limit }} OFFSET {{ $json.offset }}",
+        "options": {}
+      },
+      "id": "f8f0f43c-fb88-4499-8a90-b223c71d61e2",
+      "name": "Query Audit List1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -3200,
+        2448
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "9eNHYoZipXCw6w0w",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "=SELECT COUNT(*) total_count FROM atendimento a LEFT JOIN analisequalidade aq ON a.id_atendimento = aq.id_atendimento WHERE a.status_atendimento = 'Fechado' AND {{ $json.dateFilter }} AND aq.sentimento_geral IS NOT NULL AND aq.sentimento_geral != 'N/A'",
+        "options": {}
+      },
+      "id": "6ebb633c-9556-4717-9f1e-dadd8538e898",
+      "name": "Count Total Records1",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -3200,
+        2256
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "9eNHYoZipXCw6w0w",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const inputs = $input.all();\n\n// registros da query (Query Audit List1)\nconst conversations = inputs\n  .filter(i => i.json.id_atendimento !== undefined)\n  .map(i => i.json);\n\n// total do count\nconst countItem = inputs.find(i => i.json.total_count !== undefined);\nconst total = countItem ? Number(countItem.json.total_count) : 0;\n\nreturn [{\n  json: {\n    total,\n    conversations\n  }\n}];\n"
+      },
+      "id": "3090ec38-57ec-4a70-b6f6-13a846db9dff",
+      "name": "Format Audit Response1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2752,
+        2352
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "responseCode": 200,
+          "responseHeaders": {
+            "entries": [
+              {
+                "name": "Access-Control-Allow-Origin",
+                "value": "*"
+              },
+              {
+                "name": "Access-Control-Allow-Methods",
+                "value": "GET, OPTIONS"
+              },
+              {
+                "name": "Access-Control-Allow-Headers",
+                "value": "Content-Type, Authorization"
+              },
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          }
+        }
+      },
+      "id": "6f88a0a5-4166-4b93-8581-f3a3f3fa9c4c",
+      "name": "Return Audit Response1",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.5,
+      "position": [
+        -2528,
+        2352
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "5a69e83e-44ff-442c-8ee7-825e84e5fef2",
+      "name": "Merge Audit Results",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        -2976,
+        2352
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 2 * * *"
+            }
+          ]
+        }
+      },
+      "id": "bfbd7f27-ba41-47b1-8bb2-7fee5b7830f1",
+      "name": "Cron Schedule - Diário 02:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [
+        -2592,
+        -480
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": []
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "id": "a3da9b6e-27cf-4a01-8247-4092f84c6af7",
+      "name": "Workflow Configuration",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2368,
+        -480
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT \n  a.id_atendimento,\n  a.nome_cliente,\n  a.data_hora_inicio,\n  a.data_hora_fim,\n  a.id_atendente,\n  STRING_AGG(DISTINCT m.conteudo_texto, ' | ') as conteudo_conversa\nFROM atendimento a\nLEFT JOIN mensagem m ON a.id_atendimento = m.id_atendimento\nLEFT JOIN analisequalidade aq ON a.id_atendimento = aq.id_atendimento\nWHERE \n  a.status_atendimento = 'Fechado'\n  AND aq.id_analise IS NULL\nGROUP BY a.id_atendimento, a.nome_cliente, a.data_hora_inicio, a.data_hora_fim, a.id_atendente\nLIMIT 2",
+        "options": {}
+      },
+      "id": "82d47e5a-ec06-42d9-a6ca-f980de4bc668",
+      "name": "Buscar Conversas Não Analisadas",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -2144,
+        -480
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "9eNHYoZipXCw6w0w",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Pega TODOS os items, não só o primeiro\nconst items = $input.all().map(item => item.json);\n\nconsole.log('Total de items:', items.length);\n\nif (items.length === 0) {\n  return [];\n}\n\nreturn items.map(item => ({ json: item }));"
+      },
+      "id": "e2184aef-1e72-4e5e-9caa-916026a2323f",
+      "name": "Split Conversas",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1920,
+        -480
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Você é um Analista de Qualidade de Atendimento. Avalie a conversa do WhatsApp abaixo:\n\n**Cliente**: {{ $json.nome_cliente }}\n**Data**: {{ $json.data_hora_inicio }}\n\n**CONVERSA:**\n{{ $json.conteudo_conversa }}\n\n---\n\nRETORNE EXATAMENTE ESTE JSON (sem comentários, sem markdown):\n{\n  \"saudacao_inicial\": \"descrição breve da saudação\",\n  \"uso_nome_cliente\": \"sim ou nao\",\n  \"rapport_empatia\": \"Alto, Médio ou Baixo\",\n  \"uso_emojis\": \"sim ou nao\",\n  \"tom_conversa\": \"descrição breve\",\n  \"erros_gramaticais\": \"lista ou Nenhum\",\n  \"resolutividade\": \"sim, nao ou parcial\",\n  \"tempo_resposta\": \"Rápido, Lento ou Irregular\",\n  \"indicios_venda\": \"sim ou nao\",\n  \"sentimento_geral\": \"Positivo, Neutro ou Negativo\",\n  \"tipo_atendimento\": \"Dúvida, Reclamação, Suporte Técnico ou Vendas\",\n  \"pontuacao_geral\": 8,\n  \"observacoes\": \"3 ou mais frases com pontos fortes e fracos\"\n}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "Você é um Analista de Qualidade de Atendimento. Avalie a conversa do WhatsApp fornecida e retorne uma análise estruturada em JSON."
+        }
+      },
+      "id": "8f1a4134-9292-40fb-9915-bccb30daa8de",
+      "name": "IA Analisar Conversa",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -1696,
+        -480
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "openai/gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "openai/gpt-3.5-turbo"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "id": "b34a7b0d-a069-4184-98d0-457372946726",
+      "name": "OpenAI Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -1696,
+        -256
+      ],
+      "credentials": {
+        "openAiApi": {
+          "id": "RNLJgN2jrihAvZLH",
+          "name": "OpenAi account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"saudacao_inicial\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"Descrição breve da saudação inicial\"\n\t\t},\n\t\t\"uso_nome_cliente\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"sim ou nao\"\n\t\t},\n\t\t\"rapport_empatia\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"Alto, Médio ou Baixo\"\n\t\t},\n\t\t\"uso_emojis\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"sim ou nao\"\n\t\t},\n\t\t\"tom_conversa\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"Descrição do tom da conversa\"\n\t\t},\n\t\t\"erros_gramaticais\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"Lista de erros ou Nenhum\"\n\t\t},\n\t\t\"resolutividade\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"sim, nao ou parcial\"\n\t\t},\n\t\t\"tempo_resposta\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"Rápido, Lento ou Irregular\"\n\t\t},\n\t\t\"indicios_venda\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"sim ou nao\"\n\t\t},\n\t\t\"sentimento_geral\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"Positivo, Neutro ou Negativo\"\n\t\t},\n\t\t\"tipo_atendimento\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"Dúvida, Reclamação, Suporte Técnico ou Vendas\"\n\t\t},\n\t\t\"pontuacao_geral\": {\n\t\t\t\"type\": \"number\",\n\t\t\t\"description\": \"Pontuação de 0 a 10\"\n\t\t},\n\t\t\"observacoes\": {\n\t\t\t\"type\": \"string\",\n\t\t\t\"description\": \"Observações com 3 ou mais frases\"\n\t\t}\n\t}\n}"
+      },
+      "id": "4f0c177f-3dcd-446d-b4a3-ecfb629533e4",
+      "name": "Structured Output Parser",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -1568,
+        -256
+      ]
+    },
+    {
+      "parameters": {
+        "schema": {
+          "__rl": true,
+          "mode": "list",
+          "value": "public"
+        },
+        "table": {
+          "__rl": true,
+          "mode": "name",
+          "value": "analisequalidade"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id_atendimento": "={{ $json.id_atendimento }}",
+            "saudacao_inicial": "={{ $json.saudacao_inicial }}",
+            "uso_nome_cliente": "={{ $json.uso_nome_cliente }}",
+            "rapport_empatia": "={{ $json.rapport_empatia }}",
+            "uso_emojis": "={{ $json.uso_emojis }}",
+            "tom_conversa": "={{ $json.tom_conversa }}",
+            "erros_gramaticais": "={{ $json.erros_gramaticais }}",
+            "resolutividade": "={{ $json.resolutividade }}",
+            "tempo_resposta": "={{ $json.tempo_resposta }}",
+            "indicios_venda": "={{ $json.indicios_venda }}",
+            "sentimento_geral": "={{ $json.sentimento_geral }}",
+            "tipo_atendimento": "={{ $json.tipo_atendimento }}",
+            "pontuacao_geral": "={{ $json.pontuacao_geral }}",
+            "observacoes": "={{ $json.observacoes }}",
+            "data_analise": "={{ $now }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "id_analise",
+              "displayName": "id_analise",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "id_atendimento",
+              "displayName": "id_atendimento",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "saudacao_inicial",
+              "displayName": "saudacao_inicial",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "uso_nome_cliente",
+              "displayName": "uso_nome_cliente",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rapport_empatia",
+              "displayName": "rapport_empatia",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "uso_emojis",
+              "displayName": "uso_emojis",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tom_conversa",
+              "displayName": "tom_conversa",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "erros_gramaticais",
+              "displayName": "erros_gramaticais",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "resolutividade",
+              "displayName": "resolutividade",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tempo_resposta",
+              "displayName": "tempo_resposta",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "indicios_venda",
+              "displayName": "indicios_venda",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sentimento_geral",
+              "displayName": "sentimento_geral",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "tipo_atendimento",
+              "displayName": "tipo_atendimento",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "pontuacao_geral",
+              "displayName": "pontuacao_geral",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "observacoes",
+              "displayName": "observacoes",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "data_analise",
+              "displayName": "data_analise",
+              "required": true,
+              "defaultMatch": false,
+              "display": true,
+              "type": "dateTime",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "e15c2e23-9de6-4152-94cb-1d3dfd02eb51",
+      "name": "Salvar Análise",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        -1120,
+        -480
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "9eNHYoZipXCw6w0w",
+          "name": "Postgres account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "id-1",
+              "name": "status",
+              "value": "success",
+              "type": "string"
+            },
+            {
+              "id": "id-2",
+              "name": "message",
+              "value": "Análises inseridas",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "2b7f56b5-ee52-4b07-b42a-a98f025d961f",
+      "name": "Sucesso",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -896,
+        -480
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Dados já vêm parseados pela IA (Structured Output Parser)\nconst item = $json;\nconst idAtendimento = item.id_atendimento;\n\n// Validação\nif (!idAtendimento || idAtendimento === 0) {\n  throw new Error(`ID Atendimento inválido: ${idAtendimento}`);\n}\n\n// Retorna os dados parseados\nreturn [{\n  json: {\n    id_atendimento: idAtendimento,\n    saudacao_inicial: item.saudacao_inicial || '',\n    uso_nome_cliente: item.uso_nome_cliente || '',\n    rapport_empatia: item.rapport_empatia || '',\n    uso_emojis: item.uso_emojis || '',\n    tom_conversa: item.tom_conversa || '',\n    erros_gramaticais: item.erros_gramaticais || '',\n    resolutividade: item.resolutividade || '',\n    tempo_resposta: item.tempo_resposta || '',\n    indicios_venda: item.indicios_venda || '',\n    sentimento_geral: item.sentimento_geral || '',\n    tipo_atendimento: item.tipo_atendimento || '',\n    pontuacao_geral: parseInt(item.pontuacao_geral) || 0,\n    observacoes: item.observacoes || ''\n  }\n}];"
+      },
+      "id": "147d65fd-fab2-443e-b136-98528cd49310",
+      "name": "Processar Resposta IA",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1344,
+        -480
+      ]
+    }
+  ],
+  "pinData": {
+    "Webhook3": [
+      {
+        "json": {
+          "headers": {
+            "accept": "application/json, text/plain, */*",
+            "content-type": "application/json",
+            "user-agent": "WAHA/2025.12.1",
+            "x-webhook-request-id": "1im9j6mjk3fgjx",
+            "x-webhook-timestamp": "1766585558157",
+            "content-length": "2202",
+            "accept-encoding": "gzip, compress, deflate, br",
+            "host": "n8n:5678",
+            "connection": "keep-alive"
+          },
+          "params": {},
+          "query": {},
+          "body": {
+            "id": "evt_01kd8b8s4d0f3jhff7fzmxeg80",
+            "timestamp": 1766585558157,
+            "event": "message",
+            "session": "default",
+            "me": {
+              "id": "555198760578@c.us",
+              "pushName": "Julia - Snick Motors",
+              "lid": "141610088145132@lid",
+              "jid": "555198760578:7@s.whatsapp.net"
+            },
+            "payload": {
+              "id": "false_8744687689921@lid_ACC696B997E050A65F1B61F6CA02B49C",
+              "timestamp": 1766585558,
+              "from": "8744687689921@lid",
+              "fromMe": false,
+              "source": "app",
+              "body": "Qual os horários de atendemento de vocês ?",
+              "to": null,
+              "participant": null,
+              "hasMedia": false,
+              "media": null,
+              "ack": 2,
+              "location": null,
+              "vCards": null,
+              "ackName": "DEVICE",
+              "replyTo": null,
+              "_data": {
+                "Info": {
+                  "Chat": "8744687689921@lid",
+                  "Sender": "8744687689921@lid",
+                  "IsFromMe": false,
+                  "IsGroup": false,
+                  "AddressingMode": "",
+                  "SenderAlt": "555199863240@s.whatsapp.net",
+                  "RecipientAlt": "",
+                  "BroadcastListOwner": "",
+                  "BroadcastRecipients": null,
+                  "ID": "ACC696B997E050A65F1B61F6CA02B49C",
+                  "ServerID": 0,
+                  "Type": "text",
+                  "PushName": "Filipe Silva",
+                  "Timestamp": "2025-12-24T14:12:38Z",
+                  "Category": "",
+                  "Multicast": false,
+                  "MediaType": "",
+                  "Edit": "",
+                  "MsgBotInfo": {
+                    "EditType": "",
+                    "EditTargetID": "",
+                    "EditSenderTimestampMS": "0001-01-01T00:00:00Z"
+                  },
+                  "MsgMetaInfo": {
+                    "TargetID": "",
+                    "TargetSender": "",
+                    "TargetChat": "",
+                    "DeprecatedLIDSession": null,
+                    "ThreadMessageID": "",
+                    "ThreadMessageSenderJID": ""
+                  },
+                  "VerifiedName": null,
+                  "DeviceSentMeta": null
+                },
+                "Message": {
+                  "conversation": "Qual os horários de atendemento de vocês ?",
+                  "messageContextInfo": {
+                    "deviceListMetadata": {
+                      "recipientKeyHash": "Pa4yqFfPjI/cug==",
+                      "recipientTimestamp": 1766329155
+                    },
+                    "deviceListMetadataVersion": 2,
+                    "messageSecret": "jGBgboaD3pEcicP+n8U/+qhQONyfBqiyOvdl8F9PeRs="
+                  }
+                },
+                "IsEphemeral": false,
+                "IsViewOnce": false,
+                "IsViewOnceV2": false,
+                "IsViewOnceV2Extension": false,
+                "IsDocumentWithCaption": false,
+                "IsLottieSticker": false,
+                "IsBotInvoke": false,
+                "IsEdit": false,
+                "SourceWebMsg": null,
+                "UnavailableRequestID": "",
+                "RetryCount": 0,
+                "NewsletterMeta": null,
+                "RawMessage": {
+                  "conversation": "Qual os horários de atendemento de vocês ?",
+                  "messageContextInfo": {
+                    "deviceListMetadata": {
+                      "recipientKeyHash": "Pa4yqFfPjI/cug==",
+                      "recipientTimestamp": 1766329155
+                    },
+                    "deviceListMetadataVersion": 2,
+                    "messageSecret": "jGBgboaD3pEcicP+n8U/+qhQONyfBqiyOvdl8F9PeRs="
+                  }
+                },
+                "Status": 3
+              }
+            },
+            "environment": {
+              "version": "2025.12.1",
+              "engine": "GOWS",
+              "tier": "CORE",
+              "browser": null
+            }
+          },
+          "webhookUrl": "https://n8n.marketsharedigital.com.br/webhook/webhook",
+          "executionMode": "production"
+        },
+        "pairedItem": {
+          "item": 0
+        }
+      }
+    ]
+  },
+  "connections": {
+    "conversa iniciada pelo antendente?": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "insere mensagem na tabela",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "cria novo atendimento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atendimento encerrado?": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Parse encerramento simples",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "retorna_id": {
+      "main": [
+        [
+          {
+            "node": "insere mensagem na tabela",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Tem atendimento aberto?",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Busca id atendimento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis1": {
+      "main": [
+        [
+          {
+            "node": "Verifica possível encerramento",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse encerramento simples1": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Atendimento encerrado?2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica se é áudio2": {
+      "main": [
+        [
+          {
+            "node": "baixa msg recebida2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pula transcrição2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica possível encerramento2": {
+      "main": [
+        [
+          {
+            "node": "Atendimento encerrado?2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Pula verificação encerramento2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pula transcrição2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook3": {
+      "main": [
+        [
+          {
+            "node": "Dados2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Dados2": {
+      "main": [
+        [
+          {
+            "node": "é grupo?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "é grupo?2": {
+      "main": [
+        [
+          {
+            "node": "Switch2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "baixa msg recebida2": {
+      "main": [
+        [
+          {
+            "node": "Transcribe a recording2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cria novo atendimento2": {
+      "main": [
+        [
+          {
+            "node": "insere mensagem na tabela2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch2": {
+      "main": [
+        [
+          {
+            "node": "Verifica se é áudio2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe a recording2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca id atendimento2": {
+      "main": [
+        [
+          {
+            "node": "Tem atendimento aberto?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Tem atendimento aberto?2": {
+      "main": [
+        [
+          {
+            "node": "insere mensagem na tabela2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "conversa iniciada pelo antendente?2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields1": {
+      "main": [
+        [
+          {
+            "node": "retorna msg2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "retorna msg2": {
+      "main": [
+        [
+          {
+            "node": "retorna_id2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Chat Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "insere mensagem na tabela2": {
+      "main": [
+        [
+          {
+            "node": "Redis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "atualiza tabela atendimento2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "No Operation, do nothing5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "atualiza tabela atendimento2": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "conversa iniciada pelo antendente?2": {
+      "main": [
+        [
+          {
+            "node": "No Operation, do nothing1",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "cria novo atendimento2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields5": {
+      "main": [
+        [
+          {
+            "node": "Insert rows in a table2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "retorna_id2": {
+      "main": [
+        [
+          {
+            "node": "Busca id atendimento2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atendimento encerrado?2": {
+      "main": [
+        [
+          {
+            "node": "Parse encerramento simples1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields5",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /api/session/status": {
+      "main": [
+        [
+          {
+            "node": "Call WAHA API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call WAHA API": {
+      "main": [
+        [
+          {
+            "node": "Format Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Response": {
+      "main": [
+        [
+          {
+            "node": "Return to Frontend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /api/analytics/metrics2": {
+      "main": [
+        [
+          {
+            "node": "Build Date Filter2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Date Filter2": {
+      "main": [
+        [
+          {
+            "node": "Query Overall Metrics1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Query Top Attendant2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Query Service Metrics2",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Query Type Averages2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Overall Metrics1": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Top Attendant2": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Format Final Response2": {
+      "main": [
+        [
+          {
+            "node": "Return Analytics2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge1": {
+      "main": [
+        [
+          {
+            "node": "Format Final Response2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Service Metrics2": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "Query Type Averages2": {
+      "main": [
+        [
+          {
+            "node": "Merge1",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Webhook CSV Export": {
+      "main": [
+        [
+          {
+            "node": "Build Date Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Date Filter": {
+      "main": [
+        [
+          {
+            "node": "Query CSV Rows1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format CSV": {
+      "main": [
+        [
+          {
+            "node": "Return CSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query CSV Rows1": {
+      "main": [
+        [
+          {
+            "node": "Format CSV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /api/analytics/metrics-extended": {
+      "main": [
+        [
+          {
+            "node": "Query Extended Metrics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Extended Metrics": {
+      "main": [
+        [
+          {
+            "node": "Format Extended Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format Extended Response": {
+      "main": [
+        [
+          {
+            "node": "Return Extended Analytics",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis": {
+      "main": [
+        [
+          {
+            "node": "Verifica possível encerramento2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /api/conversations/export/:id": {
+      "main": [
+        [
+          {
+            "node": "Extract ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract ID": {
+      "main": [
+        [
+          {
+            "node": "Query Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Messages": {
+      "main": [
+        [
+          {
+            "node": "Format CSV Export",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format CSV Export": {
+      "main": [
+        [
+          {
+            "node": "Return CSV Export",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GET /api/conversations/audit1": {
+      "main": [
+        [
+          {
+            "node": "Extract Query Params1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Query Params1": {
+      "main": [
+        [
+          {
+            "node": "Build Date Filter Audit1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Date Filter Audit1": {
+      "main": [
+        [
+          {
+            "node": "Query Audit List1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Count Total Records1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Audit List1": {
+      "main": [
+        [
+          {
+            "node": "Merge Audit Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Count Total Records1": {
+      "main": [
+        [
+          {
+            "node": "Merge Audit Results",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Format Audit Response1": {
+      "main": [
+        [
+          {
+            "node": "Return Audit Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge Audit Results": {
+      "main": [
+        [
+          {
+            "node": "Format Audit Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cron Schedule - Diário 02:00": {
+      "main": [
+        [
+          {
+            "node": "Workflow Configuration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Workflow Configuration": {
+      "main": [
+        [
+          {
+            "node": "Buscar Conversas Não Analisadas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar Conversas Não Analisadas": {
+      "main": [
+        [
+          {
+            "node": "Split Conversas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Conversas": {
+      "main": [
+        [
+          {
+            "node": "IA Analisar Conversa",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IA Analisar Conversa": {
+      "main": [
+        [
+          {
+            "node": "Processar Resposta IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "IA Analisar Conversa",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "IA Analisar Conversa",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Salvar Análise": {
+      "main": [
+        [
+          {
+            "node": "Sucesso",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Processar Resposta IA": {
+      "main": [
+        [
+          {
+            "node": "Salvar Análise",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "8237c493-8bd0-4616-bc89-a95b08118b8d",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "c00682a2fc579bff9615aa9be956cba66c69c42ed5658287932fc14102e898dd"
+  },
+  "id": "QNvmn2Ax4Ymy3WLU",
+  "tags": [
+    {
+      "updatedAt": "2025-12-14T13:43:27.495Z",
+      "createdAt": "2025-12-14T13:43:27.495Z",
+      "id": "Dx5mHGE8MSWZN5Pc",
+      "name": "Teste1"
+    }
+  ]
+}

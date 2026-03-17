@@ -1,0 +1,128 @@
+services:
+
+  redis:
+    image: redis:latest
+    platform: linux/amd64
+    env_file: ./.env
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    networks:
+      - default
+
+  postgres:
+    image: postgres:latest
+    platform: linux/amd64
+    env_file: ./.env
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - pgdata:/var/lib/postgresql
+    networks:
+      - default
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    platform: linux/amd64
+    env_file: ./.env
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - default
+
+  waha:
+    image: devlikeapro/waha:latest
+    platform: linux/amd64
+    env_file: ./.env
+    environment:
+      WHATSAPP_HOOK_URL: http://${DOCKER_HOST_INTERNAL}:${N8N_PORT}/webhook-test/webhook
+      WHATSAPP_DEFAULT_ENGINE: GOWS
+      WHATSAPP_HOOK_EVENTS: message
+      WHATSAPP_DOWNLOAD_MEDIA: "true"
+      WHATSAPP_APPS_ENABLED: "true"
+      WHATSAPP_FILES_DIR: "/app/media"
+      WHATSAPP_FILES_CLEANER_ENABLED: "false"
+      WHATSAPP_FILES_CLEANER_CRON: ""
+      WHATSAPP_FILES_CLEANER_KEEP_DAYS: "30"
+      WAHA_API_KEY: ${WAHA_API_KEY}
+      WAHA_BASE_URL: /waha
+    volumes:
+      - waha_sessions:/app/.sessions
+      - waha_media:/app/media
+      - ./waha-custom/src:/app/waha-custom/src
+      - ./waha-custom/dist:/app/waha-custom/dist
+    extra_hosts:
+      - "${DOCKER_HOST_INTERNAL}:host-gateway"
+    networks:
+      - default
+
+  n8n:
+    image: n8nio/n8n:latest
+    platform: linux/amd64
+    env_file: ./.env
+    environment:
+      WEBHOOK_URL: http://${DOCKER_HOST_INTERNAL}:${N8N_PORT}
+      N8N_HOST: ${DOCKER_HOST_INTERNAL}
+      GENERIC_TIMEZONE: ${GENERIC_TIMEZONE}
+      N8N_LOG_LEVEL: debug
+      N8N_COMMUNITY_PACKAGES_ALLOW_TOOL_USAGE: "true"
+      N8N_PROXY_HOPS: 1
+    volumes:
+      - n8n_data:/home/node/.n8n
+    extra_hosts:
+      - "${DOCKER_HOST_INTERNAL}:host-gateway"
+    networks:
+      - default
+
+  elitefinder-painel:
+    build:
+      context: ./elitefinder-painel
+      dockerfile: Dockerfile
+    container_name: elitefinder-painel
+    ports:
+      - "5173:5173"
+    depends_on:
+      - waha
+      - n8n
+    networks:
+      - default
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:5173/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+  caddy:
+    image: caddy:latest
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+    networks:
+      - default
+    depends_on:
+      - n8n
+      - pgadmin
+      - elitefinder-painel
+
+volumes:
+  pgdata:
+  waha_sessions:
+  waha_media:
+  n8n_data:
+  pgadmin_data:
+  caddy_data:
+
+networks:
+  default:
+    driver: bridge

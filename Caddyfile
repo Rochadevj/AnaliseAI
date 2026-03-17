@@ -1,0 +1,72 @@
+{
+    admin off
+}
+
+# Redirect all HTTP to HTTPS
+:80 {
+    redir https://{host}{uri}
+}
+
+# Main site with automatic HTTPS
+marketsharedigital.com.br {
+    encode gzip
+
+    # WAHA API proxy - inject API key upstream
+    @waha_api path /api*
+    reverse_proxy @waha_api waha:3000 {
+        header_up X-API-KEY qR7sP!xZ2tYh*VbK6mN9eWdJ4rFaGcC8lQzE3yUo
+    }
+
+    # WAHA direct /waha path
+    @waha_base path /waha*
+    reverse_proxy @waha_base waha:3000 {
+        header_up X-API-KEY qR7sP!xZ2tYh*VbK6mN9eWdJ4rFaGcC8lQzE3yUo
+    }
+
+    # n8n webhooks - forward without stripping /webhook prefix
+    @n8n_webhook path /webhook*
+    reverse_proxy @n8n_webhook n8n:5678
+
+    # n8n UI under /n8n - proxy without stripping to preserve asset paths
+    @n8n_ui path /n8n*
+    reverse_proxy @n8n_ui n8n:5678
+
+    # pgAdmin under /pgadmin
+    handle_path /pgadmin/* {
+        uri strip_prefix /pgadmin
+        reverse_proxy pgadmin:80
+    }
+
+    # pgAdmin direct browser path
+    handle_path /browser/* {
+        reverse_proxy pgadmin:80
+    }
+
+    # Frontend (SPA) fallback
+    reverse_proxy elitefinder-painel:5173
+
+    log {
+        output stdout
+        format console
+    }
+}
+
+# n8n dedicated subdomain
+n8n.marketsharedigital.com.br {
+    reverse_proxy n8n:5678
+
+    log {
+        output stdout
+        format console
+    }
+}
+
+# pgAdmin dedicated subdomain
+pgadmin.marketsharedigital.com.br {
+    reverse_proxy pgadmin:80
+
+    log {
+        output stdout
+        format console
+    }
+}
