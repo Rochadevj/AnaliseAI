@@ -5,6 +5,7 @@ import Login from './Login';
 import logo from '../assets/12597368.png';
 import { apiFetchMetricsOverall, apiFetchMetricsExtended, OverallAnalyticsResponse, ExtendedAnalyticsResponse } from '../lib/analyticsApi';
 import { apiExportConversationsCsv, apiFetchAuditConversations, AuditConversation } from '../lib/conversationsApi';
+import { fetchWahaQrBlob, getWahaSession, logoutWahaSession, startWahaSession, stopWahaSession } from '../lib/wahaApi';
 
 // Dados simulados caso a IA não responda
 const mockAnalyticsData = [
@@ -18,11 +19,6 @@ const mockAnalyticsData = [
 ];
 
 export default function Index() {
-  const wahaBase = import.meta.env.VITE_WAHA_BASE;
-  const wahaApiKey = import.meta.env.VITE_WAHA_API_KEY || '';
-  const wahaGetHeaders = { 'x-api-key': wahaApiKey };
-  const wahaJsonHeaders = { 'Content-Type': 'application/json', 'x-api-key': wahaApiKey };
-
   // Controle de fluxo (login → waha → dashboard) com persistência
   const [step, setStep] = useState<'login' | 'waha' | 'dashboard'>(() => {
     // Recupera o estado salvo no localStorage
@@ -207,16 +203,10 @@ export default function Index() {
   // Login agora decide: se já conectado, vai direto ao dashboard; senão, mostra QR (WAHA)
   const startSessionWithFallback = async () => {
     try {
-      // Endpoint correto: POST /api/sessions/start com body JSON
-      const res = await fetch(`${wahaBase}/api/sessions/start`, {
-        method: 'POST',
-        headers: wahaJsonHeaders,
-        body: JSON.stringify({ name: 'default' })
-      });
+      const { response: res, data } = await startWahaSession();
       if (res.ok) return true;
       // Se já estiver iniciada (422), também é sucesso
       if (res.status === 422) {
-        const data = await res.json();
         if (data.message?.includes('already started')) return true;
       }
     } catch (err) {
@@ -229,9 +219,8 @@ export default function Index() {
     setIsCheckingConnection(true);
     setSessionError(null);
     try {
-      const res = await fetch(`${wahaBase}/api/sessions/default`, { headers: wahaGetHeaders });
+      const { response: res, data } = await getWahaSession();
       if (res.ok) {
-        const data = await res.json();
         if (data?.status === 'WORKING' || data?.status === 'CONNECTED' || data?.status === 'READY') {
           setConnectionStatus('Ativo');
           setStep('dashboard');
@@ -242,9 +231,8 @@ export default function Index() {
           const started = await startSessionWithFallback();
           if (started) {
             await new Promise(r => setTimeout(r, 1200));
-            const checkRes = await fetch(`${wahaBase}/api/sessions/default`, { headers: wahaGetHeaders });
+            const { response: checkRes, data: checkData } = await getWahaSession();
             if (checkRes.ok) {
-              const checkData = await checkRes.json();
               if (checkData?.status === 'WORKING' || checkData?.status === 'CONNECTED' || checkData?.status === 'READY') {
                 setConnectionStatus('Ativo');
                 setStep('dashboard');
@@ -297,12 +285,11 @@ export default function Index() {
       }
 
       try {
-        const res = await fetch(`${wahaBase}/api/sessions/default`, { headers: wahaGetHeaders });
+        const { response: res, data } = await getWahaSession();
         if (!res.ok) {
           if (!cancelled) setConnectionStatus('Erro ao conectar');
           return;
         }
-        const data = await res.json();
         const currentStatus = data.status;
         
         // Log apenas quando status muda
@@ -371,13 +358,9 @@ export default function Index() {
               
               try {
                 console.log('🔄 Iniciando auto-recovery...');
-                await fetch(`${wahaBase}/api/sessions/default/stop`, { method: 'POST', headers: wahaGetHeaders });
+                await stopWahaSession();
                 await new Promise(r => setTimeout(r, 2000));
-                await fetch(`${wahaBase}/api/sessions/start`, {
-                  method: 'POST',
-                  headers: wahaJsonHeaders,
-                  body: JSON.stringify({ name: 'default' })
-                });
+                await startWahaSession();
                 await new Promise(r => setTimeout(r, 3000));
                 
                 setQrSrc(null);
@@ -420,10 +403,7 @@ export default function Index() {
     setIsLoadingQR(true);
     setSessionError(null);
     try {
-      // Endpoint correto confirmado: GET /api/default/auth/qr
-      const res = await fetch(`${wahaBase}/api/default/auth/qr`, {
-        headers: { ...wahaGetHeaders, 'Accept': 'image/png,image/jpeg,*/*' }
-      });
+      const res = await fetchWahaQrBlob();
       if (res.ok) {
         const blob = await res.blob();
         setQrSrc(URL.createObjectURL(blob));
@@ -453,13 +433,12 @@ export default function Index() {
   };
   useEffect(() => {
     if (step === 'waha') {
-      if (attempts === 0) {
-        const ensureStarted = async () => {
-          try {
-            const statusRes = await fetch(`${wahaBase}/api/sessions/default`, { headers: wahaGetHeaders });
-            if (statusRes.ok) {
-              const statusData = await statusRes.json();
-              console.log('Status inicial da sessão:', statusData.status);
+        if (attempts === 0) {
+          const ensureStarted = async () => {
+            try {
+              const { response: statusRes, data: statusData } = await getWahaSession();
+              if (statusRes.ok) {
+                console.log('Status inicial da sessão:', statusData.status);
               
               // Se já está WORKING, vai direto pro dashboard
               if (statusData?.status === 'WORKING') {
@@ -482,14 +461,13 @@ export default function Index() {
           // Caso contrário, tenta iniciar a sessão
           console.log('Iniciando sessão WAHA...');
           const started = await startSessionWithFallback();
-          if (started) {
-            // Aguarda um pouco para a sessão entrar em SCAN_QR_CODE
-            setTimeout(async () => {
-              try {
-                const checkRes = await fetch(`${wahaBase}/api/sessions/default`, { headers: wahaGetHeaders });
-                if (checkRes.ok) {
-                  const checkData = await checkRes.json();
-                  console.log('Status pós-start:', checkData.status);
+            if (started) {
+              // Aguarda um pouco para a sessão entrar em SCAN_QR_CODE
+              setTimeout(async () => {
+                try {
+                  const { response: checkRes, data: checkData } = await getWahaSession();
+                  if (checkRes.ok) {
+                    console.log('Status pós-start:', checkData.status);
                   
                   if (checkData?.status === 'WORKING') {
                     setConnectionStatus('Ativo');
@@ -526,19 +504,19 @@ export default function Index() {
     setRestartStatus('Desconectando sessão...');
     try {
       // 1. Fazer logout da sessão atual
-      await fetch(`${wahaBase}/api/sessions/default/logout`, { method: 'POST', headers: wahaGetHeaders });
+      await logoutWahaSession();
       setRestartStatus('Aguardando desconexão...');
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // 2. Fazer stop da sessão para limpar cache
       setRestartStatus('Limpando cache da sessão...');
-      await fetch(`${wahaBase}/api/sessions/default/stop`, { method: 'POST', headers: wahaGetHeaders });
+      await stopWahaSession();
       setRestartStatus('Cache limpo. Preparando reconexão...');
       await new Promise(resolve => setTimeout(resolve, 1000));
 
       // 3. Iniciar sessão novamente
       setRestartStatus('Reconectando à sessão WAHA...');
-      await fetch(`${wahaBase}/api/sessions/default/start`, { method: 'POST', headers: wahaGetHeaders });
+      await startWahaSession();
 
       // 4. Aguardar e buscar novo QR
       setRestartStatus('Buscando novo QR Code...');
@@ -561,7 +539,7 @@ export default function Index() {
   // Encerrar Sessão WAHA
   const handleLogout = async () => {
     try {
-      await fetch(`${wahaBase}/api/sessions/default/logout`, { method: 'POST', headers: wahaGetHeaders });
+      await logoutWahaSession();
       setConnectionStatus('Desativado');
       // Limpa o localStorage ao fazer logout
       localStorage.removeItem('eliteFinder_sessionStep');

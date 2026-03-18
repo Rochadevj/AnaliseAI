@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import logo from "../assets/12597368.png";
+import { fetchWahaSessions } from "../lib/wahaApi";
 
 type Sessao = {
   id: string;
@@ -26,10 +27,8 @@ export default function Sessoes() {
   useEffect(() => {
     async function fetchSessoes() {
       try {
-        const res = await fetch(`${import.meta.env.VITE_WAHA_BASE}/api/sessions`, {
-          headers: { 'x-api-key': import.meta.env.VITE_WAHA_API_KEY || '' }
-        });
-        const data = await res.json();
+        const { response, data } = await fetchWahaSessions();
+        if (!response.ok) throw new Error("Erro ao buscar sessoes");
         const arr = Array.isArray(data) ? data : Object.values(data);
         setSessoes(arr);
       } catch (err) {

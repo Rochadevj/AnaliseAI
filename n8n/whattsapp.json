@@ -1279,13 +1279,13 @@
     },
     {
       "parameters": {
-        "url": "https://marketsharedigital.com.br/api/sessions/default",
+        "url": "https://SEU_DOMINIO_OU_PROXY/api/sessions/default",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
             {
               "name": "x-api-key",
-              "value": "qR7sP!xZ2tYh*VbK6mN9eWdJ4rFaGcC8lQzE3yUo"
+                "value": "__WAHA_API_KEY__"
             }
           ]
         },
@@ -2474,7 +2474,7 @@
               "browser": null
             }
           },
-          "webhookUrl": "https://n8n.marketsharedigital.com.br/webhook/webhook",
+          "webhookUrl": "https://SEU_N8N_HOST/webhook/webhook",
           "executionMode": "production"
         },
         "pairedItem": {

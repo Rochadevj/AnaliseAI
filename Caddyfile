@@ -8,19 +8,19 @@
 }
 
 # Main site with automatic HTTPS
-marketsharedigital.com.br {
+{$APP_DOMAIN} {
     encode gzip
 
     # WAHA API proxy - inject API key upstream
     @waha_api path /api*
     reverse_proxy @waha_api waha:3000 {
-        header_up X-API-KEY qR7sP!xZ2tYh*VbK6mN9eWdJ4rFaGcC8lQzE3yUo
+        header_up X-API-KEY {$WAHA_API_KEY}
     }
 
     # WAHA direct /waha path
     @waha_base path /waha*
     reverse_proxy @waha_base waha:3000 {
-        header_up X-API-KEY qR7sP!xZ2tYh*VbK6mN9eWdJ4rFaGcC8lQzE3yUo
+        header_up X-API-KEY {$WAHA_API_KEY}
     }
 
     # n8n webhooks - forward without stripping /webhook prefix
@@ -52,7 +52,7 @@ marketsharedigital.com.br {
 }
 
 # n8n dedicated subdomain
-n8n.marketsharedigital.com.br {
+{$N8N_DOMAIN} {
     reverse_proxy n8n:5678
 
     log {
@@ -62,7 +62,7 @@ n8n.marketsharedigital.com.br {
 }
 
 # pgAdmin dedicated subdomain
-pgadmin.marketsharedigital.com.br {
+{$PGADMIN_DOMAIN} {
     reverse_proxy pgadmin:80
 
     log {

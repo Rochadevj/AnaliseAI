@@ -1,5 +1,5 @@
-const N8N_CONVERSATIONS_EXPORT_ENDPOINT = import.meta.env.VITE_N8N_CONVERSATIONS_EXPORT_ENDPOINT || 'https://n8n.marketsharedigital.com.br/webhook/api/conversations/export';
-const N8N_CONVERSATIONS_AUDIT_ENDPOINT = import.meta.env.VITE_N8N_CONVERSATIONS_AUDIT_ENDPOINT || 'https://n8n.marketsharedigital.com.br/webhook/api/conversations/audit';
+const N8N_CONVERSATIONS_EXPORT_ENDPOINT = '/api/conversations/export';
+const N8N_CONVERSATIONS_AUDIT_ENDPOINT = '/api/conversations/audit';
 
 export interface ExportFilters {
 	timeRange?: 'HOJE' | 'MES_ATUAL' | 'ULTIMO_MES' | 'ULTIMOS_6_MESES' | 'PERSONALIZADO';

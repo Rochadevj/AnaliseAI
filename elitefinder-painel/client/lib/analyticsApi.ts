@@ -1,6 +1,6 @@
-const API_BASE = import.meta.env.VITE_ANALYTICS_API_BASE || 'http://localhost:5001';
-const N8N_METRICS_ENDPOINT = import.meta.env.VITE_N8N_METRICS_ENDPOINT || 'http://localhost:5000/webhook/api/analytics/metrics';
-const N8N_METRICS_EXTENDED_ENDPOINT = import.meta.env.VITE_N8N_METRICS_EXTENDED_ENDPOINT || 'http://localhost:5000/webhook/api/analytics/metrics-extended';
+const API_BASE = import.meta.env.VITE_ANALYTICS_API_BASE || '/api/backend';
+const N8N_METRICS_ENDPOINT = '/api/analytics/metrics';
+const N8N_METRICS_EXTENDED_ENDPOINT = '/api/analytics/metrics-extended';
 
 export interface OverallMetricsData {
   total: number;
